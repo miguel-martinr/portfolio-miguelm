@@ -22,7 +22,7 @@
     },
     {
       "category": "DevOps & Tools",
-      "items": ["Docker", "GitHub Actions", "Vercel", "Git"]
+      "items": ["Docker", "AWS", "GitHub Actions", "Git"]
     }
   ]
 }

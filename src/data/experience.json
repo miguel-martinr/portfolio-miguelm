@@ -24,11 +24,11 @@
     "location": "Madrid, Spain"
   },
   {
-    "company": "University of Example",
-    "role": "Software Engineer Intern",
-    "type": "internship",
-    "startDate": "2020-09",
-    "endDate": "2021-05",
+    "company": "University of La Laguna",
+    "role": "Co-Author",
+    "type": "research",
+    "startDate": "2022-01",
+    "endDate": "2022-06",
     "description": "Developed a data pipeline for processing sensor data and built a visualization tool for the research team.",
     "technologies": ["Python", "React", "D3.js"],
     "location": "Granada, Spain"
