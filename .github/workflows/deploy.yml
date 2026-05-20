@@ -35,8 +35,8 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          # Cambia este valor al nombre de tu repo si no es <usuario>.github.io
-          VITE_BASE_PATH: ''
+          # Nombre del repositorio (base path en GitHub Pages)
+          VITE_BASE_PATH: portfolio-miguelm
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

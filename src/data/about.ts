@@ -7,12 +7,13 @@ export const data: About = {
   tagline: 'Building products that matter, one line at a time.',
   bio: 'Software engineer passionate about clean architecture, developer experience and building useful things. I enjoy working across the full stack with a focus on TypeScript, React and Node.js.',
   avatar,
-  cvUrl: '/cv.pdf',
+  cvUrl: 'https://drive.google.com/uc?export=download&id=1DJSspxC9oX5BvyHFwd6O-Q4dbBcm2Hvd',
   email: 'miguel.martinr11@gmail.com',
   location: 'Spain',
   socials: [
     { platform: 'github', url: 'https://github.com/miguel-martinr', label: 'GitHub' },
     { platform: 'linkedin', url: 'https://linkedin.com/in/miguel-martinr', label: 'LinkedIn' },
+    { platform: 'email', url: 'mailto:miguel.martinr11@gmail.com', label: 'Email' },
   ],
   skills: [
     {

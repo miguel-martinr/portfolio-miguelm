@@ -50,7 +50,12 @@ export function Hero() {
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           {about.cvUrl && (
-            <a href={about.cvUrl} download className={cn(buttonVariants())}>
+            <a
+              href={about.cvUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants())}
+            >
               Download CV
             </a>
           )}
@@ -64,7 +69,7 @@ export function Hero() {
           {about.socials.map((social) => (
             <a
               key={social.platform}
-              href={social.platform === 'email' ? `mailto:${social.url}` : social.url}
+              href={social.url}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={social.label ?? social.platform}
