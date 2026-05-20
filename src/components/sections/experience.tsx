@@ -1,6 +1,62 @@
+import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { Badge } from '@/components/ui/badge'
 import { getExperiences } from '@/lib/data'
 import { formatDate, getDuration } from '@/lib/utils'
+
+const CHARS_LIMIT = 200
+
+const getCompactDescription = (bulletPoints: string[]) => {
+  if (!bulletPoints.length) return null
+  const compactView = bulletPoints.join('<&>').slice(0, CHARS_LIMIT).split('<&>')
+  compactView[compactView.length - 1] = compactView[compactView.length - 1] + '...'
+  return compactView
+}
+
+function ExpandableDescription({ bulletPoints }: { bulletPoints: string[] }) {
+  const [expanded, setExpanded] = useState(false)
+  if (!bulletPoints.length) return null
+
+  const isLong = bulletPoints.join(' ').length > CHARS_LIMIT
+  const visible = expanded ? bulletPoints : getCompactDescription(bulletPoints) || []
+
+  return (
+    <div className="mb-4">
+      <ul className="text-muted-foreground space-y-1.5 text-sm leading-relaxed">
+        {visible.map((point, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <span>{children}</span>,
+                a: ({ href, children }) => (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline underline-offset-2 hover:opacity-80"
+                  >
+                    {children}
+                  </a>
+                ),
+              }}
+            >
+              {point}
+            </ReactMarkdown>
+          </li>
+        ))}
+      </ul>
+      {isLong && (
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="text-primary mt-2 cursor-pointer text-xs underline-offset-2 hover:underline"
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </div>
+  )
+}
 
 export function Experience() {
   const experiences = getExperiences()
@@ -34,20 +90,29 @@ export function Experience() {
                 <div className="bg-card text-card-foreground rounded-xl border p-5 shadow-sm">
                   {/* Header */}
                   <div className="mb-3 flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="font-semibold">{exp.role}</h3>
-                      {exp.companyUrl ? (
-                        <a
-                          href={exp.companyUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-                        >
-                          {exp.company} ↗
-                        </a>
-                      ) : (
-                        <p className="text-muted-foreground text-sm">{exp.company}</p>
+                    <div className="flex items-center gap-3">
+                      {exp.companyLogo && (
+                        <img
+                          src={exp.companyLogo}
+                          alt={`${exp.company} logo`}
+                          className="h-8 w-8 rounded-md object-contain"
+                        />
                       )}
+                      <div>
+                        <h3 className="font-semibold">{exp.role}</h3>
+                        {exp.companyUrl ? (
+                          <a
+                            href={exp.companyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                          >
+                            {exp.company} ↗
+                          </a>
+                        ) : (
+                          <p className="text-muted-foreground text-sm">{exp.company}</p>
+                        )}
+                      </div>
                     </div>
                     <Badge variant="outline" className="shrink-0 text-xs capitalize">
                       {exp.type.replace('-', ' ')}
@@ -64,14 +129,12 @@ export function Experience() {
                   </p>
 
                   {/* Description */}
-                  <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                    {exp.description}
-                  </p>
+                  <ExpandableDescription bulletPoints={exp.description} />
 
                   {/* Tech stack */}
                   {exp.technologies.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
-                      {exp.technologies.map((tech) => (
+                      {exp.technologies.sort().map((tech) => (
                         <Badge key={tech} variant="secondary" className="text-xs">
                           {tech}
                         </Badge>

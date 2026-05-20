@@ -32,9 +32,15 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="flex min-h-screen flex-col items-center justify-center px-6 pt-20 text-center"
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-20 text-center"
     >
-      <div className="max-w-2xl space-y-6">
+      {/* Animated aurora background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="blob-1 absolute -top-32 left-[5%] h-[650px] w-[650px] rounded-full bg-indigo-500/40 blur-3xl dark:bg-indigo-500/20" />
+        <div className="blob-2 absolute top-[15%] -right-20 h-[550px] w-[550px] rounded-full bg-violet-500/35 blur-3xl dark:bg-violet-500/20" />
+        <div className="blob-3 absolute -bottom-20 left-[25%] h-[500px] w-[500px] rounded-full bg-sky-400/30 blur-3xl dark:bg-sky-400/15" />
+      </div>
+      <div className="relative z-10 max-w-2xl space-y-6">
         <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
           Hey, I&apos;m
         </p>
@@ -71,7 +77,7 @@ export function Hero() {
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-10 animate-bounce">
+      <div className="absolute bottom-10 z-10 animate-bounce">
         <div className="border-muted-foreground h-6 w-4 rounded-full border-2 p-1">
           <div className="bg-muted-foreground h-1.5 w-1 rounded-full" />
         </div>

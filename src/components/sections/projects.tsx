@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { getProjects } from '@/lib/data'
 import type { Project } from '@/lib/schemas'
 
@@ -21,8 +21,8 @@ const STATUS_LABEL: Record<Project['status'], string> = {
 
 export function Projects() {
   const allProjects = getProjects()
+  const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Collect unique techs from all projects for filter chips
   const allTechs = useMemo(() => {
     const set = new Set<string>()
     allProjects.forEach((p) => p.technologies.forEach((t) => set.add(t)))
@@ -30,6 +30,16 @@ export function Projects() {
   }, [allProjects])
 
   const [activeTech, setActiveTech] = useState<string | null>(null)
+  const [lightbox, setLightbox] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!lightbox) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightbox(null)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [lightbox])
 
   const filtered = useMemo(
     () =>
@@ -37,113 +47,207 @@ export function Projects() {
     [allProjects, activeTech]
   )
 
-  // Show featured first
   const sorted = [...filtered].sort((a, b) => Number(b.featured) - Number(a.featured))
 
-  return (
-    <section id="projects" className="mx-auto max-w-5xl px-6 py-24">
-      <h2 className="mb-4 text-3xl font-bold tracking-tight">Projects</h2>
+  const scroll = (dir: 'prev' | 'next') => {
+    const el = scrollRef.current
+    if (!el) return
+    const card = el.firstElementChild as HTMLElement | null
+    const cardWidth = (card?.offsetWidth ?? 360) + 24
+    el.scrollBy({ left: dir === 'next' ? cardWidth : -cardWidth, behavior: 'smooth' })
+  }
 
-      {/* Filter chips */}
-      <div className="mb-10 flex flex-wrap gap-2">
-        <button
-          onClick={() => setActiveTech(null)}
-          className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-            activeTech === null
-              ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          All
-        </button>
-        {allTechs.map((tech) => (
-          <button
-            key={tech}
-            onClick={() => setActiveTech(activeTech === tech ? null : tech)}
-            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-              activeTech === tech
-                ? 'bg-foreground text-background'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {tech}
-          </button>
-        ))}
+  const handleFilterChange = (tech: string | null) => {
+    setActiveTech(tech)
+    setTimeout(() => scrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' }), 0)
+  }
+
+  return (
+    <section id="projects" className="py-24">
+      <div className="mx-auto max-w-5xl px-6">
+        <h2 className="mb-4 text-3xl font-bold tracking-tight">Projects</h2>
+
+        {/* Filter chips */}
+        {allTechs.length > 0 && (
+          <div className="mb-10 flex flex-wrap gap-2">
+            <button
+              onClick={() => handleFilterChange(null)}
+              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                activeTech === null
+                  ? 'bg-foreground text-background'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              All
+            </button>
+            {allTechs.map((tech) => (
+              <button
+                key={tech}
+                onClick={() => handleFilterChange(activeTech === tech ? null : tech)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  activeTech === tech
+                    ? 'bg-foreground text-background'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tech}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {sorted.map((project) => (
-          <Card
-            key={project.name}
-            className={`flex flex-col transition-shadow hover:shadow-md ${project.featured ? 'ring-primary/20 ring-1' : ''}`}
-          >
-            {project.image && (
-              <div className="bg-muted overflow-hidden rounded-t-xl">
-                <img src={project.image} alt={project.name} className="h-40 w-full object-cover" />
-              </div>
-            )}
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="leading-snug font-semibold">{project.name}</h3>
-                <div className="flex shrink-0 gap-1">
-                  {project.featured && <Badge className="text-xs">Featured</Badge>}
-                  <Badge
-                    variant={project.status === 'archived' ? 'secondary' : 'outline'}
-                    className="text-xs"
+      {/* Carousel */}
+      <div className="relative">
+        {/* Prev */}
+        <button
+          onClick={() => scroll('prev')}
+          aria-label="Previous project"
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'icon' }),
+            'absolute top-1/2 left-2 z-10 -translate-y-1/2 shadow-md'
+          )}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        {/* Scroll container */}
+        <div
+          ref={scrollRef}
+          className="flex [scroll-snap-type:x_mandatory] gap-6 overflow-x-auto scroll-smooth px-4 pb-4 sm:px-16 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {sorted.map((project) => (
+            <div
+              key={project.name}
+              className="w-[calc(100vw-2rem)] shrink-0 snap-center sm:w-90 lg:w-95"
+            >
+              <Card
+                className={cn(
+                  'flex h-full flex-col transition-shadow hover:shadow-md',
+                  project.featured && 'ring-primary/20 ring-1'
+                )}
+              >
+                {/* Header: background image or plain */}
+                {project.image ? (
+                  <div
+                    className="relative h-44 cursor-zoom-in bg-cover bg-center"
+                    style={{ backgroundImage: `url(${project.image})` }}
+                    onClick={() => setLightbox(project.image!)}
                   >
-                    {STATUS_LABEL[project.status]}
-                  </Badge>
-                </div>
-              </div>
-              <p className="text-muted-foreground text-xs">{project.year}</p>
-            </CardHeader>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4">
+                      <div>
+                        <h3 className="leading-snug font-semibold text-white">{project.name}</h3>
+                        <p className="mt-0.5 text-xs text-white/70">{project.year}</p>
+                      </div>
+                      <Badge
+                        variant={project.status === 'archived' ? 'secondary' : 'outline'}
+                        className="text-xs"
+                      >
+                        {STATUS_LABEL[project.status]}
+                      </Badge>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="px-4 pt-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="leading-snug font-semibold">{project.name}</h3>
+                        <p className="text-muted-foreground mt-0.5 text-xs">{project.year}</p>
+                      </div>
+                      <Badge
+                        variant={project.status === 'archived' ? 'secondary' : 'outline'}
+                        className="text-xs"
+                      >
+                        {STATUS_LABEL[project.status]}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
 
-            <CardContent className="flex-1">
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {project.shortDescription}
-              </p>
-              {project.technologies.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {project.technologies.map((tech) => (
-                    <Badge key={tech} variant="secondary" className="text-xs">
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </CardContent>
+                <CardContent className="flex-1 pt-4">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {project.shortDescription}
+                  </p>
+                  {project.technologies.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {project.technologies.map((tech) => (
+                        <Badge key={tech} variant="secondary" className="text-xs">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
 
-            <CardFooter className="gap-2 pt-0">
-              {project.repoUrl && (
-                <a
-                  href={project.repoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-                >
-                  <GithubIcon /> Code
-                </a>
-              )}
-              {project.demoUrl && (
-                <a
-                  href={project.demoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(buttonVariants({ size: 'sm' }))}
-                >
-                  <ExternalLink className="mr-1 h-3 w-3" /> Demo
-                </a>
-              )}
-            </CardFooter>
-          </Card>
-        ))}
+                <CardFooter className="gap-2 pt-4">
+                  {project.repoUrl && (
+                    <a
+                      href={project.repoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+                    >
+                      <GithubIcon /> Code
+                    </a>
+                  )}
+                  {project.demoUrl && (
+                    <a
+                      href={project.demoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(buttonVariants({ size: 'sm' }))}
+                    >
+                      <ExternalLink className="mr-1 h-3 w-3" /> Demo
+                    </a>
+                  )}
+                </CardFooter>
+              </Card>
+            </div>
+          ))}
+        </div>
+
+        {/* Next */}
+        <button
+          onClick={() => scroll('next')}
+          aria-label="Next project"
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'icon' }),
+            'absolute top-1/2 right-2 z-10 -translate-y-1/2 shadow-md'
+          )}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
 
       {sorted.length === 0 && (
-        <p className="text-muted-foreground py-12 text-center text-sm">
-          No projects match the selected filter.
-        </p>
+        <div className="mx-auto max-w-5xl px-6">
+          <p className="text-muted-foreground py-12 text-center text-sm">
+            No projects match the selected filter.
+          </p>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm duration-200"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            onClick={() => setLightbox(null)}
+            aria-label="Close"
+            className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/25"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={lightbox}
+            className="animate-in zoom-in-90 max-h-[90vh] max-w-[90vw] cursor-zoom-out rounded-xl object-contain shadow-2xl duration-300"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </section>
   )

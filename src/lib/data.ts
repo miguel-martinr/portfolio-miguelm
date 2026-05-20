@@ -1,15 +1,15 @@
 import { ExperienceListSchema, ProjectListSchema, AboutSchema } from './schemas'
 import type { Experience, Project, About } from './schemas'
 
-import experienceData from '@/data/experience.json'
-import projectsData from '@/data/projects.json'
-import aboutData from '@/data/about.json'
+import { data as experienceData } from '@/data/experience'
+import { data as projectsData } from '@/data/projects'
+import { data as aboutData } from '@/data/about'
 
 function parse<T>(schema: { parse: (data: unknown) => T }, data: unknown, label: string): T {
   try {
     return schema.parse(data)
   } catch (err) {
-    throw new Error(`[portfolio] Invalid data in ${label}.json:\n${String(err)}`)
+    throw new Error(`[portfolio] Invalid data in ${label}.json:\n${String(err)}`, { cause: err })
   }
 }
 

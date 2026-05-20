@@ -10,7 +10,9 @@ export const ExperienceSchema = z.object({
   /** Título del puesto */
   role: z.string(),
   /** Tipo: full-time, part-time, freelance, internship */
-  type: z.enum(['full-time', 'part-time', 'freelance', 'internship']).default('full-time'),
+  type: z
+    .enum(['full-time', 'part-time', 'freelance', 'internship', 'research'])
+    .default('full-time'),
   /** Fecha de inicio (YYYY-MM) */
   startDate: z.string().regex(/^\d{4}-\d{2}$/, 'Formato: YYYY-MM'),
   /** Fecha de fin (YYYY-MM) o null si es el trabajo actual */
@@ -19,7 +21,7 @@ export const ExperienceSchema = z.object({
     .regex(/^\d{4}-\d{2}$/, 'Formato: YYYY-MM')
     .nullable(),
   /** Descripción en texto plano o Markdown */
-  description: z.string(),
+  description: z.array(z.string()).default([]),
   /** Lista de tecnologías / stack */
   technologies: z.array(z.string()).default([]),
   /** Ubicación (ej: "Madrid, Spain" o "Remote") */
