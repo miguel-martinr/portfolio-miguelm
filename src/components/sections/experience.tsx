@@ -85,7 +85,7 @@ export function Experience() {
 
               {/* Card */}
               <div
-                className={`ml-8 w-full md:ml-0 md:w-[calc(50%-2rem)] ${i % 2 === 0 ? 'md:pr-8' : 'md:pl-8'}`}
+                className={`min-w-0 flex-1 md:w-[calc(50%-2rem)] md:flex-none ${i % 2 === 0 ? 'md:pr-8' : 'md:pl-8'}`}
               >
                 <div className="bg-card text-card-foreground rounded-xl border p-5 shadow-sm">
                   {/* Header */}
