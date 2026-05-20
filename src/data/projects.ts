@@ -1,5 +1,5 @@
 import type { Project } from '@/lib/schemas'
-import zendaImage from '@/assets/demo_zenda.png'
+import zendaImage from '@/assets/demo_zenda_2.gif'
 import carnetlyImage from '@/assets/demo_carnetly.png'
 import deepviewImage from '@/assets/demo_deepview.png'
 import pyctureImage from '@/assets/demo_pycture.gif'
